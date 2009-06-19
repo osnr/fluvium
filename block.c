@@ -16,6 +16,7 @@ void block_init()
     int i;    
     for(i=2; i<256; ++i)
     {
+		block_appearance(i, A_COLOR);
         block_rgb0(i, 0x00, 0x00, 0xff);
         
 		blocks[i].flags = 0x00;
@@ -72,7 +73,8 @@ void block_velocity(const unsigned char type, const float vx, const float vy)
 	e->velocity[1] = vy;
 }
 
-void block_get_rgb(const unsigned char type, GLubyte** rgb) {
+void block_get_rgb(const unsigned char type, GLubyte** rgb)
+{
 	*rgb = blocks[type].rgb[0];
 }
 
@@ -84,7 +86,8 @@ void block_rgb0(const unsigned char type, const GLubyte r, const GLubyte g, cons
     e->rgb[0][2] = b;
 }
 
-void block_appearance(const unsigned char type, const char appearance) {
+void block_appearance(const unsigned char type, const char appearance)
+{
 	block *e = &blocks[type];
 	
 	e->appearance = appearance;

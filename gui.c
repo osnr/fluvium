@@ -1,10 +1,19 @@
 #include "gui.h"
 
+int gui_width, gui_height;
+int grid_width, grid_height;
+
 /* Initialize GUI's surface */
 void gui_init(gui *ui, graphics *gfx, const int width, const int height)
 {
+	gui_width = 128;
+	gui_height = height;
+	
+	grid_width = width/8;
+	grid_height = height/8;
+	
     ui->gfx = gfx;
-    ui->surf = SDL_CreateRGBSurface(SDL_HWSURFACE, width, height, 8, 0xff, 0xff, 0xff, 0xff);
+    ui->surf = SDL_CreateRGBSurface(SDL_HWSURFACE, gui_width, gui_height, 8, 0xff, 0xff, 0xff, 0xff);
     SDL_FillRect(ui->surf, NULL, SDL_MapRGB(gfx->surf->format, 0, 0, 0));
 }
 
@@ -44,14 +53,15 @@ void gui_build(gui *ui)
 /* Render GUI as quad in OpenGL */
 void gui_render(gui *ui, const int pointer)
 {
+	int w = grid_width * 8;
     glEnable(GL_TEXTURE_2D);
     glColor3ub(0xff, 0xff, 0xff);
     glBindTexture(GL_TEXTURE_2D, ui->texture);
     glBegin(GL_QUADS);
-    glTexCoord2i(0, 0); glVertex2i(512, 0);
-    glTexCoord2i(1, 0); glVertex2i(512+ui->surf->w, 0);
-    glTexCoord2i(1, 1); glVertex2i(512+ui->surf->w, ui->surf->h);
-    glTexCoord2i(0, 1); glVertex2i(512, ui->surf->h);
+    glTexCoord2i(0, 0); glVertex2i(w, 0);
+    glTexCoord2i(1, 0); glVertex2i(w+ui->surf->w, 0);
+    glTexCoord2i(1, 1); glVertex2i(w+ui->surf->w, ui->surf->h);
+    glTexCoord2i(0, 1); glVertex2i(w, ui->surf->h);
     glEnd();
 	glDisable(GL_TEXTURE_2D);
 }

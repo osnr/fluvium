@@ -10,10 +10,11 @@ typedef struct
 /* Load entire file into buffer */
 void buffer_init(buffer *buf, const char *filename)
 {
+	int size;
     FILE *fin = fopen(filename, "rb");
 	
 	fseek(fin, 0, SEEK_END);
-	const int size = ftell(fin);
+	size = ftell(fin);
 	fseek(fin, 0, SEEK_SET);
 	buf->data = malloc(size+1);
 	fread(buf->data, 1, size, fin);
@@ -153,6 +154,9 @@ int buffer_get_float(buffer *buf, float *ret)
 /* Parse parameters using format string / destination references */
 void parsef(buffer *buf, const char *fmt, ...)
 {
+	va_list args;
+	int i;
+	
     if(!strlen(fmt))
     {
         while(buffer_at(buf) != ')') buffer_next(buf);
@@ -160,10 +164,8 @@ void parsef(buffer *buf, const char *fmt, ...)
         return;
     }
 
-    va_list args;
-    va_start(args, fmt);
-    
-    int i;
+    va_start(args, fmt);   
+	
     for(i=0; i<strlen(fmt); ++i)
     {
         switch(fmt[i])
@@ -187,12 +189,13 @@ void parsef(buffer *buf, const char *fmt, ...)
 
 void config_parse(gui *ui, const char *config_file, int *element_count, int *block_count)
 {
+	unsigned char element_pointer = -1;
+	unsigned char block_pointer = 1;
+	
     buffer buf;
 	
     buffer_init(&buf, config_file);
 
-	unsigned char element_pointer = -1;
-	unsigned char block_pointer = 1;	
 	int element = -1;
 	
     char command[32];

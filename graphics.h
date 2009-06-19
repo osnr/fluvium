@@ -18,7 +18,7 @@ typedef struct
     int last_tickcount;
 } graphics;
 
-void graphics_init(graphics *gfx, const int width, const int height, const char *font);
+void graphics_init(graphics *gfx, const int width, const int height, const int fullscreen, const char *font);
 
 void graphics_free(graphics *gfx);
 

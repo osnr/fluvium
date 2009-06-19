@@ -1,7 +1,8 @@
 #include "grid.h"
 
-void *grid_grid[64][64][32];
-unsigned char grid_size[64][64], grid_flags[64][64][2];
+void ****grid_grid; // [y][x][32 particles]
+unsigned char **grid_size, ***grid_flags; // [y][x], [y][x][2 - block type and flags]
+int grid_height, grid_width;
 
 /* Add pointer to grid at (x,y) */
 void grid_add(const unsigned char x, const unsigned char y, void *i)
@@ -28,23 +29,54 @@ unsigned char grid_get_size(const unsigned char x, const unsigned char y)
 /* Clear entire grid by setting sizes to 0 */
 void grid_clear()
 {
-    memset(grid_size, 0, 64*64);
+	int y;
+	
+    for(y=0; y<grid_height; ++y)
+    {
+		memset(grid_size[y], 0, sizeof(unsigned char)*grid_width);
+    }
+	
 }
 
 /* Initialize all grids */
-void grid_init()
+void grid_init(const int width, const int height)
 {
-    memset(grid_flags, 0, 64*64);
-    grid_clear();
-    int x, y;
-    for(x=0; x<64; ++x)
+	int x, y;
+	grid_height = height;
+	grid_width = width;
+	
+	grid_grid = malloc(sizeof(void ***)*height);
+	memset(grid_grid, 0, sizeof(void ***)*height);
+	
+	grid_size = malloc(sizeof(unsigned char *)*height);
+	memset(grid_size, 0, sizeof(unsigned char *)*height);
+	
+	grid_flags = malloc(sizeof(unsigned char **)*height);
+	memset(grid_flags, 0, sizeof(unsigned char **)*height);
+    
+    for(y=0; y<height; ++y)
     {
-        for(y=0; y<64; ++y)
+		grid_grid[y] = malloc(sizeof(void **)*width);
+		memset(grid_grid[y], 0, sizeof(void **)*width);
+		
+		grid_size[y] = malloc(sizeof(unsigned char)*width);
+		memset(grid_size[y], 0, sizeof(unsigned char)*width);
+		
+		grid_flags[y] = malloc(sizeof(unsigned char *)*width);
+		memset(grid_flags[y], 0, sizeof(unsigned char *)*width);
+		
+        for(x=0; x<width; ++x)
         {
-            if(!x || !y || x==63 || y==63) grid_type(x, y, 1);
-            grid_flags[y][x][1] = 0;
+			grid_grid[y][x] = malloc(sizeof(particle*)*32);
+			memset(grid_grid[y][x], 0, sizeof(particle*)*32);
+			
+			grid_flags[y][x] = malloc(sizeof(unsigned char)*2);
+			memset(grid_flags[y][x], 0, sizeof(unsigned char)*2);
+			
+            if(!x || !y || x==width-1 || y==height-1) grid_type(x, y, 1);
         }
     }
+	grid_clear();
 }
 
 /* Set block type at (x, y) */

@@ -34,7 +34,7 @@ Examples of blocks are the Wall and Emitter types. They can be tangible or
 intangible (passthrough).
 
 newBlock(""): Creates a new block type by name
-enableIntangible(): Allows elements to pass through this block
+enableSolid(): Prevents elements from passing through this block
 enableDestroy(): Destroys elements which touch this block
 enableEmit(): Causes block to emit energy
 enableVelocity(): Block will change velocity of elements touching it

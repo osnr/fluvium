@@ -100,7 +100,7 @@ void graphics_psys_init(const void *rgb, const void *pos)
     glVertexPointer(2, GL_FLOAT, sizeof(particle), pos);
 }
 /* Initialize keys / SDL / OpenGL / Font */
-void graphics_init(graphics *gfx, const int width, const int height, const char *font)
+void graphics_init(graphics *gfx, const int width, const int height, const int fullscreen, const char *font)
 {
     gfx->width = width;
     gfx->height = height;
@@ -108,13 +108,16 @@ void graphics_init(graphics *gfx, const int width, const int height, const char 
     int i;
     for(i=0; i<512; ++i) gfx->key[i] = 0;
     for(i=0; i<256; ++i) gfx->but[i] = 0;
-    
+
     gfx->last_tickcount = 0;
 
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
     const SDL_VideoInfo* n = SDL_GetVideoInfo();
-    const int f = SDL_OPENGL | SDL_GL_DOUBLEBUFFER;
+	
+    int f = SDL_OPENGL | SDL_GL_DOUBLEBUFFER;
+	if (fullscreen) f |= SDL_FULLSCREEN;
+		
     gfx->surf = SDL_SetVideoMode(gfx->width, gfx->height, n->vfmt->BitsPerPixel, f);
 
     glMatrixMode(GL_PROJECTION);

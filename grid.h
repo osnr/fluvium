@@ -24,7 +24,7 @@ void *grid_get(const unsigned char x, const unsigned char y, const unsigned char
 
 void grid_clear();
 
-void grid_init();
+void grid_init(const int width, const int height);
 
 void grid_type(const unsigned char x, const unsigned char y, const unsigned char type);
 

@@ -1,5 +1,6 @@
-#include <SDL/SDL.h>
+#include "SDL.h"
 #include <stdio.h>
+#include <getopt.h>
 
 #include "graphics.h"
 #include "particle.h"
@@ -18,12 +19,26 @@
 #define PLINE(x1,y1,x2,y2) {glVertex2i(PCRD((x1),(y1))); glVertex2i(PCRD((x2),(y2)));}
 #define GLINE(x1,y1,x2,y2) {glVertex2i(GCRD((x1),(y1))); glVertex2i(GCRD((x2),(y2)));}
 
+#define UNIX
+
+#ifdef OSX_BUNDLE
+	#define FONT "fluvium.app/Contents/Resources/lacurg.ttf"
+	#define CONFIG "fluvium.app/Contents/Resources/config.txt"
+#endif
+#ifdef UNIX
+	#define FONT "data/lacurg.ttf"
+	#define CONFIG "data/config.txt"
+#endif
+
 int element_count = 0;
 int block_count = 0;
 
 int material_pointer = 0;
 int xy_pointer[2] = {1, 1};
 int next_key = 0;
+
+int width=640, height=480, fullscreen=0;
+int grid_height, grid_width;
 
 void change_selected(int delta)
 {
@@ -49,6 +64,16 @@ void set_selected(int index)
 	else material_name = block_get_name(material_pointer - element_count);
 	
     SDL_WM_SetCaption(material_name, "Fluvium");
+}
+
+int check_xypointer()
+{
+	if(xy_pointer[0] < 0) xy_pointer[0] = grid_width - 1;
+	else if(xy_pointer[0] >= grid_width) return xy_pointer[0] = 0;
+	if(xy_pointer[1] < 0) xy_pointer[1] = grid_height - 1;
+	else if(xy_pointer[1] >= grid_height) return xy_pointer[1] = 0;
+	
+	return 1;
 }
 
 void render_arrow()
@@ -90,17 +115,68 @@ void put_material()
 	}
 }
 
+int process_options(int argc, char **argv)
+{
+	static struct option long_options[] =
+	{
+		{"width", required_argument, 0, 'w'},
+		{"height", required_argument, 0, 'h'},
+		{"fullscreen", required_argument, 0, 'F'},
+		{"help", no_argument, 0, '?'},
+		{0, 0, 0, 0}
+	};
+	
+	char c;
+	while((c = getopt_long_only(argc, argv, "w:h:F?", long_options, NULL)) != -1) switch (c)
+	{
+		case 'w':
+			if(!(width = atoi(optarg)) || width % 8 != 0)
+			{
+				printf("Invalid width value; width must be nonzero and divisible by 8.\n");
+				return 0;
+			}
+			break;
+		case 'h':
+			if(!(height = atoi(optarg)) || height % 8 != 0)
+			{
+				printf("Invalid height value; height must be nonzero and divisible by 8.\n");
+				return 0;
+			}
+			break;
+		case 'F':
+			fullscreen = 1;
+			break;
+		case '?':
+		default:
+			printf("Usage: fluvium [-w width] [-h height] [-F]\n"
+					"Options:\n");
+			printf("  -?, --help                   Display this message and exit\n");
+			printf("  -w WIDTH, --width WIDTH      Use WIDTH as game width. Must be a multiple of 8.\n");
+			printf("  -h HEIGHT, --height HEIGHT   Use HEIGHT as game height. Must be a multiple of 8.\n");
+			printf("  -F, --fullscreen             Display the game in fullscreen mode. Windowed mode is the default.\n");
+			return 0;
+	}
+	return 1;
+	
+}
+
 int main(int argc, char **argv)
 {
+	if (!process_options(argc, argv)) return 1;
+		
+	grid_height=height/8;
+	grid_width=(width-128)/8;
+	
     graphics gfx;
-    graphics_init(&gfx, 640, 512, "data/lacurg.ttf");
+    graphics_init(&gfx, width, height, fullscreen, FONT);
 
     gui ui;
-    gui_init(&ui, &gfx, 128, 512);
+    gui_init(&ui, &gfx, grid_width*8, grid_height*8);
 
     element_init();
 	block_init();
-    config_parse(&ui, "./data/config.txt", &element_count, &block_count);
+	
+    config_parse(&ui, CONFIG, &element_count, &block_count);
 	
 	gui_build(&ui);
 	
@@ -112,13 +188,13 @@ int main(int argc, char **argv)
     glBegin(GL_LINES);
     
     int y, x;
-    for(y=0; y<64; ++y) PLINE(0, y, 64, y);
-    for(x=0; x<64; ++x) PLINE(x, 0, x, 64);
+    for(y=0; y<grid_height; ++y) PLINE(0, y, grid_width, y);
+    for(x=0; x<grid_width; ++x) PLINE(x, 0, x, grid_height);
     
     glEnd();
     glEndList();
-
-    psys_init(512, 512, 10000);
+	
+    psys_init(grid_width*8, grid_height*8, 10000);
 	
     while(graphics_events(&gfx))
     {
@@ -127,9 +203,9 @@ int main(int argc, char **argv)
 		
         glClear(GL_COLOR_BUFFER_BIT);
 
-        for(y=0; y<64; ++y)
+        for(y=0; y<grid_height; ++y)
         {
-            for(x=0; x<64; ++x)
+            for(x=0; x<grid_width; ++x)
             {
                 unsigned char gtype = grid_get_type(x, y);
                 if(gtype)
@@ -200,7 +276,7 @@ int main(int argc, char **argv)
 
         glPushMatrix();
         glScalef(8, 8, 1);
-        glTranslatef(64.7, material_pointer*2+1, 0.0);
+        glTranslatef(grid_width+.7, material_pointer*2+1, 0.0);
         glRotatef(90, 0, 0, 1);
         glColor3ub(0xaa, 0x90, 0x90);
         //render_arrow();
@@ -222,10 +298,7 @@ int main(int argc, char **argv)
             if(gfx.key[SDLK_RIGHT]) {xy_pointer[0]++; do_key(&gfx, clock);}
             else if(gfx.key[SDLK_LEFT]) {xy_pointer[0]--; do_key(&gfx, clock);}
 
-            if(xy_pointer[0] < 0) xy_pointer[0] = 63;
-            else if(xy_pointer[0] > 63) xy_pointer[0] = 0;
-            if(xy_pointer[1] < 0) xy_pointer[1] = 63;
-            else if(xy_pointer[1] > 63) xy_pointer[1] = 0;
+            check_xypointer();
         }
 
         if(gfx.key[SDLK_z])
@@ -281,7 +354,7 @@ int main(int argc, char **argv)
         if(gfx.but[SDL_BUTTON_LEFT]) //graphics_onbut(&gfx, SDL_BUTTON_LEFT))
         {
             // GUI click or particle click?
-            if(gfx.mouse_x > 512)
+            if(width - gfx.mouse_x < 128)
             {
                 if(gfx.mouse_y < (element_count + block_count) * 16)
                 {
@@ -293,7 +366,7 @@ int main(int argc, char **argv)
                 xy_pointer[0] = gfx.mouse_x / G_S;
                 xy_pointer[1] = gfx.mouse_y / G_S;
 				
-				put_material();
+				if (check_xypointer()) put_material();
 			}
         }
 		frame = SDL_GetTicks() - start;

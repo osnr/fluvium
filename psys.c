@@ -3,7 +3,7 @@
 
 particle *m_p;
 
-int m_active, m_size, m_width, m_height;
+int m_active, m_size, m_width, m_height, grid_width, grid_height;
 
 void psys_add(particle *p)
 {
@@ -41,9 +41,10 @@ void psys_calc()
         int dx2 = (int)((i->pos[0] + i->size * 2) * recip);
         int dy2 = (int)((i->pos[1] + i->size * 2) * recip);
         if(dx1 < 0) dx1 = 0;
-        else if(dx2 > 63) dx2 = 63;
+        else if(dx2 > (grid_width - 1)) dx2 = grid_width - 1;
         if(dy1 < 0) dy1 = 0;
-        else if(dy2 > 63) dy2 = 63;
+        else if(dy2 > (grid_height - 1)) dy2 = grid_height - 1;
+		
         for(y=dy1; y<=dy2; ++y)
         {
             for(x=dx1; x<=dx2; ++x)
@@ -65,9 +66,15 @@ void psys_calc()
     /* Kill bad particles */
     for(i=m_p; i<m_p+m_active; ++i)
     {
+		if (i->pos[0]<0 || i->pos[1]<0 || i->pos[0]>m_width-1 || i->pos[1]>m_height-1)
+		{
+			m_active--;
+            *i = m_p[m_active];
+            continue;
+		}
         const unsigned char gtype = grid_get_type((int)i->pos[0]>>3, (int)i->pos[1]>>3);
 		const unsigned int gflags = block_get_flags(gtype);
-        if(gflags & M_SOLID || gflags & M_DESTROY || i->pos[0]<0 || i->pos[1]<0 || i->pos[0]>511 || i->pos[1]>511)
+        if(gflags & M_SOLID || gflags & M_DESTROY)
         {
             m_active--;
             *i = m_p[m_active];
@@ -160,7 +167,7 @@ void psys_calc()
             i->vel[1] *= -1.0;
         }
 
-        if(!(i->pos[0]<0 || i->pos[1]<0 || i->pos[0]>511 || i->pos[1]>511))
+        if(!(i->pos[0]<0 || i->pos[1]<0 || i->pos[0]>m_width-1 || i->pos[1]>m_height-1))
         {
             grid_add(((int)i->pos[0])>>3, ((int)i->pos[1])>>3, i);
         }
@@ -186,11 +193,15 @@ void psys_init(const int width, const int height, const int size)
 {
     m_p = malloc(sizeof(particle) * size);
     m_size = size;
+	
     m_width = width;
     m_height = height;
+	grid_width = width / 8;
+	grid_height = height / 8;
+	
     m_active = 0;
     psys_size = &m_active;
-    grid_init();
+    grid_init(grid_width, grid_height);
     graphics_psys_init(m_p[0].rgb, m_p[0].pos);
 }
 
