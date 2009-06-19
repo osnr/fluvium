@@ -1,0 +1,46 @@
+Playing with the pre-made elements is fun, but wouldn't it be funner if you
+could make your own? Well, you can! The configuration file is located in the
+data folder (./data/config.txt) All of the pre-made elements are scripted out
+in this file. Try studying them to get a feel for how the configuration works.
+Making small changes to the pre-made elements is a good way to learn what's
+going on.
+
+Here is a quick reference to the command functions:
+
+newElement(""): Creates a new element by name (all the commands following
+apply to this)
+enableEmit(): Particle emits energy (set emission with "setEmit")
+enableBias(): Enable bias for particle energy (the bias is set with "setBias")
+enableSharing(): Allow particle to share energy with its neighbors
+enableMorphing(): Allow particle to morph between high and low energy states
+enableClumping(): Enable clumping behavior
+setHotkey(K): Sets a hotkey for this element
+setRGB0(R, G, B): Set particle color for low energy state
+setRGB1(R, G, B): Set particle color for high energy state
+setGravity(l, h): Set gravity for low and high energy states (negative is
+antigravity)
+setSize(l, h): Set particle size for low and high energy states
+setFriction(l, h): Set friction for low and high energy states (inverse
+friction)
+setEmit(e): Set energy for particle to emit (its neighbors will absorb it)
+setBias(b): Set bias energy level (particle will settle at this energy level)
+setColdState(""): Set element to transition into when energy level hits 0.0
+setHotState(""): Set element to transition into when energy level hits 1.0
+addReaction(A, B, X): When the particle hits the element type A, it
+transitions into the element type B with a 1 in X chance of transition.
+
+Blocks fit into the grid, do not move, and are not considered particles.
+Examples of blocks are the Wall and Emitter types. They can be tangible or
+intangible (passthrough).
+
+newBlock(""): Creates a new block type by name
+enableIntangible(): Allows elements to pass through this block
+enableDestroy(): Destroys elements which touch this block
+enableEmit(): Causes block to emit energy
+enableVelocity(): Block will change velocity of elements touching it
+setHotkey(K): Sets a hotkey for this block
+setAppearance(A): Sets appearance of block. Options are UPARROW, DOWNARROW,
+LEFTARROW, RIGHTARROW, COLOR
+setRGB0(R, G, B): Set block color if appearance of block is COLOR
+setVelocity(X, Y): Affects velocity of elements which touch this block
+setEmit(e): Set energy for particle to emit

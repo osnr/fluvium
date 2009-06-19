@@ -1,0 +1,20 @@
+Fluvium is a fun physics simulation which lets you play with different
+materials, simulated with 2D particles. You can create your own materials and
+change the gameplay.
+
+Fluvium is written in C, and it uses SDL and OpenGL for portable graphics.
+Most platforms should be supported, including Windows, Linux, and Mac OS X.
+You will need the development tools and library headers:
+
+- SDL 1.2 or higher with development files
+- SDL_ttf 2.0 or higher with development files
+- OpenGL development files
+
+Note that I have not extensively tested the compile process on platforms
+besides Mac OS X. To compile on OS X, you will need UNIX-form (not framework)
+versions of SDL and SDL_ttf. Other platforms, as well as SDL frameworks on OS
+X, will require some tweaking of the Makefile and headers.
+
+Make sure that the configuration file is present at data/config.txt before you
+run Fluvium. This file contains all the materials used in the game; without
+it, the game cannot run.
