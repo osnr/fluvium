@@ -93,7 +93,7 @@ void grid_data(const unsigned char x, const unsigned char y, const unsigned char
 
 /* Get block type at (x, y) */
 unsigned char grid_get_type(const unsigned char x, const unsigned char y)
-{
+{	
     return grid_flags[y][x][0];
 }
 

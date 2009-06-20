@@ -66,12 +66,13 @@ void psys_calc()
     /* Kill bad particles */
     for(i=m_p; i<m_p+m_active; ++i)
     {
-		if (i->pos[0]<0 || i->pos[1]<0 || i->pos[0]>m_width-1 || i->pos[1]>m_height-1)
-		{
-			m_active--;
+		if(i->pos[0]<0 || i->pos[1]<0 || i->pos[0]>=m_width || i->pos[1]>=m_height)
+        {
+            m_active--;
             *i = m_p[m_active];
             continue;
-		}
+        }
+		
         const unsigned char gtype = grid_get_type((int)i->pos[0]>>3, (int)i->pos[1]>>3);
 		const unsigned int gflags = block_get_flags(gtype);
         if(gflags & M_SOLID || gflags & M_DESTROY)
@@ -144,8 +145,19 @@ void psys_calc()
 
         const float test[2] = {i->pos[0] + i->vel[0], i->pos[1] + i->vel[1]};
         const int t[2][2] = {{(int)test[0]>>3, (int)test[1]>>3}, {(int)i->pos[0]>>3, (int)i->pos[1]>>3}};
+		
+		// FIXME: not sure why we should need this, but boundary errors started happening after the resolution fix
+		// and this stops them
+		if(t[0][0]<0 || t[1][1]<0 || t[0][0]>=grid_width || t[1][1]>=grid_height || 
+				t[1][0]<0 || t[0][1]<0 || t[1][0]>=grid_width || t[0][1]>=grid_height)
+        {
+            m_active--;
+			e--;
+            *i = m_p[m_active];
+            continue;
+        }
         const char hitx = block_get_flags(grid_get_type(t[0][0], t[1][1])) & M_SOLID;
-        const char hity = block_get_flags(grid_get_type(t[1][0], t[0][1])) & M_SOLID;
+        const char hity = block_get_flags(grid_get_type(t[1][0], t[0][1])) & M_SOLID;		
         if(!(block_get_flags(grid_get_type(t[0][0], t[0][1])) & M_SOLID))
         {
             i->pos[0] += i->vel[0];

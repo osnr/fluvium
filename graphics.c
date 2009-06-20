@@ -89,7 +89,10 @@ Uint32 pget(SDL_Surface *surface, int x, int y)
 
 void graphics_draw_particles(int active)
 {
-	 glDrawArrays(GL_POINTS, 0, active);
+	glPushMatrix();
+	glTranslatef(0, MENU_HEIGHT, 0);
+	glDrawArrays(GL_POINTS, 0, active);
+	glPopMatrix();
 }
 
 void graphics_psys_init(const void *rgb, const void *pos)

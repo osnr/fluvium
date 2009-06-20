@@ -164,14 +164,14 @@ int main(int argc, char **argv)
 {
 	if (!process_options(argc, argv)) return 1;
 		
-	grid_height=height/8;
-	grid_width=(width-128)/8;
+	grid_height=(height-MENU_HEIGHT)/8;
+	grid_width=(width-GUI_WIDTH)/8;
 	
     graphics gfx;
     graphics_init(&gfx, width, height, fullscreen, FONT);
 
     gui ui;
-    gui_init(&ui, &gfx, grid_width*8, grid_height*8);
+    gui_init(&ui, &gfx, width-GUI_WIDTH, height);
 
     element_init();
 	block_init();
@@ -188,8 +188,8 @@ int main(int argc, char **argv)
     glBegin(GL_LINES);
     
     int y, x;
-    for(y=0; y<grid_height; ++y) PLINE(0, y, grid_width, y);
-    for(x=0; x<grid_width; ++x) PLINE(x, 0, x, grid_height);
+    for(y=0; y<grid_height; ++y) PLINE(0, y+MENU_HEIGHT/8, grid_width, y+MENU_HEIGHT/8);
+    for(x=0; x<grid_width; ++x) PLINE(x, 0+MENU_HEIGHT/8, x, grid_height+MENU_HEIGHT/8);
     
     glEnd();
     glEndList();
@@ -241,7 +241,7 @@ int main(int argc, char **argv)
                             particle_factory(&p, grid_get_data(x, y));
                             psys_add(&p);
                         }
-                        glTranslatef(x, y, 0);
+                        glTranslatef(x, y+MENU_HEIGHT/8, 0);
                         glBegin(GL_QUADS);
                         glVertex2i(0, 0);
                         glVertex2i(1, 0);
@@ -263,7 +263,7 @@ int main(int argc, char **argv)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         glPushMatrix();
         glScalef(8, 8, 1);
-        glTranslatef(xy_pointer[0], xy_pointer[1], 0.0);
+        glTranslatef(xy_pointer[0], xy_pointer[1]+MENU_HEIGHT/8, 0.0);
         glColor3ub(0xff, 0xff, 0xff);
         glBegin(GL_QUADS);
         glVertex2f(0.0, 0.0);
@@ -276,7 +276,7 @@ int main(int argc, char **argv)
 
         glPushMatrix();
         glScalef(8, 8, 1);
-        glTranslatef(grid_width+.7, material_pointer*2+1, 0.0);
+        glTranslatef(grid_width+.7, material_pointer*2+1+MENU_HEIGHT/8, 0.0);
         glRotatef(90, 0, 0, 1);
         glColor3ub(0xaa, 0x90, 0x90);
         //render_arrow();
@@ -354,17 +354,17 @@ int main(int argc, char **argv)
         if(gfx.but[SDL_BUTTON_LEFT]) //graphics_onbut(&gfx, SDL_BUTTON_LEFT))
         {
             // GUI click or particle click?
-            if(width - gfx.mouse_x < 128)
+            if(width - gfx.mouse_x < GUI_WIDTH)
             {
-                if(gfx.mouse_y < (element_count + block_count) * 16)
+                if(gfx.mouse_y > MENU_HEIGHT && gfx.mouse_y-MENU_HEIGHT < (element_count + block_count) * 16)
                 {
-                    set_selected(gfx.mouse_y / 16);
+                    set_selected((gfx.mouse_y-MENU_HEIGHT) / 16);
                 }
             }
             else
             {
                 xy_pointer[0] = gfx.mouse_x / G_S;
-                xy_pointer[1] = gfx.mouse_y / G_S;
+                xy_pointer[1] = (gfx.mouse_y-MENU_HEIGHT) / G_S;
 				
 				if (check_xypointer()) put_material();
 			}

@@ -3,6 +3,9 @@
 
 #include "graphics.h"
 
+#define GUI_WIDTH 128
+#define MENU_HEIGHT 0
+
 typedef struct
 {
     graphics *gfx;
